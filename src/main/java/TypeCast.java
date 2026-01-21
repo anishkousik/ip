@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TypeCast {
@@ -20,8 +21,7 @@ ____________________________________________________________
 """);
         
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[101];
-        int numTasks = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
         
         while (true) {
             
@@ -38,35 +38,45 @@ ____________________________________________________________
                 } else if (input.equals("list")) {
                     System.out.println("____________________________________________________________");
                     System.out.println("Here are the tasks in your list:");
-                    for (int i = 0; i < numTasks; i++) {
-                        System.out.println((i + 1) + "." + tasks[i].toString());
+                    for (int i = 0; i < tasks.size(); i++) {
+                        System.out.println((i + 1) + "." + tasks.get(i).toString());
                     }
                     System.out.println("____________________________________________________________");
                 } else if (input.startsWith("mark ")) {
                     int taskIndex = Integer.parseInt(input.substring(5)) - 1;
-                    tasks[taskIndex].markDone();
+                    tasks.get(taskIndex).markDone();
                     System.out.println("____________________________________________________________");
                     System.out.println("Nice! I've marked this task as done:");
-                    System.out.println("  " + tasks[taskIndex].toString());
+                    System.out.println("  " + tasks.get(taskIndex).toString());
                     System.out.println("____________________________________________________________");
                 } else if (input.startsWith("unmark ")) {
                     int taskIndex = Integer.parseInt(input.substring(7)) - 1;
-                    tasks[taskIndex].markNotDone();
+                    tasks.get(taskIndex).markNotDone();
                     System.out.println("____________________________________________________________");
                     System.out.println("OK, I've marked this task as not done yet:");
-                    System.out.println("  " + tasks[taskIndex].toString());
+                    System.out.println("  " + tasks.get(taskIndex).toString());
+                    System.out.println("____________________________________________________________");
+                } else if (input.startsWith("delete ")) {
+                    int taskIndex = Integer.parseInt(input.substring(7)) - 1;
+                    if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                        throw new TypeCastException("Task index out of range.");
+                    }
+                    Task removedTask = tasks.remove(taskIndex);
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Noted. I've removed this task:");
+                    System.out.println("  " + removedTask.toString());
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
                 } else if (input.startsWith("todo ")) {
                     String description = input.substring(5).trim();
                     if (description.isEmpty()) {
                         throw new TypeCastException("The description of a todo cannot be empty.");
                     }
-                    tasks[numTasks] = new Todo(description);
-                    numTasks++;
+                    tasks.add(new Todo(description));
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + tasks[numTasks - 1].toString());
-                    System.out.println("Now you have " + numTasks + " tasks in the list.");
+                    System.out.println("  " + tasks.get(tasks.size() - 1).toString());
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
                 } else if (input.startsWith("deadline ")) {
                     String rest = input.substring(9);
@@ -82,12 +92,11 @@ ____________________________________________________________
                     if (by.isEmpty()) {
                         throw new TypeCastException("The deadline date/time cannot be empty.");
                     }
-                    tasks[numTasks] = new Deadline(description, by);
-                    numTasks++;
+                    tasks.add(new Deadline(description, by));
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + tasks[numTasks - 1].toString());
-                    System.out.println("Now you have " + numTasks + " tasks in the list.");
+                    System.out.println("  " + tasks.get(tasks.size() - 1).toString());
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
                 } else if (input.startsWith("event ")) {
                     String rest = input.substring(6);
@@ -108,12 +117,11 @@ ____________________________________________________________
                     if (to.isEmpty()) {
                         throw new TypeCastException("The event end date/time cannot be empty.");
                     }
-                    tasks[numTasks] = new Event(description, from, to);
-                    numTasks++;
+                    tasks.add(new Event(description, from, to));
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + tasks[numTasks - 1].toString());
-                    System.out.println("Now you have " + numTasks + " tasks in the list.");
+                    System.out.println("  " + tasks.get(tasks.size() - 1).toString());
+                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
                 } else if (input.equals("todo") || input.equals("deadline") || input.equals("event")) {
                     if (input.equals("todo")) {
