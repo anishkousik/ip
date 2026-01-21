@@ -13,14 +13,11 @@ public class TypeCast {
 
         System.out.println(logo + "\n");
         System.out.println("""
-                           ____________________________________________________________\r
-                            Hello! I'm TypeCast\r
-                            What can I do for you?\r
-                           ____________________________________________________________\r
-                           """ //
-        //
-        //
-        );
+____________________________________________________________
+Hello! I'm TypeCast
+What can I do for you?
+____________________________________________________________
+""");
         
         Scanner scanner = new Scanner(System.in);
         Task[] tasks = new Task[101];
@@ -32,12 +29,10 @@ public class TypeCast {
             
             if (input.equals("bye")) {
                 System.out.println("""
-                                   ____________________________________________________________\r
-                                    Bye. Hope to see you again soon!\r
-                                   ____________________________________________________________\r
-                                   """ //
-                //
-                );
+____________________________________________________________
+Bye. Hope to see you again soon!
+____________________________________________________________
+""");
                 break;
             } else if (input.equals("list")) {
                 System.out.println("____________________________________________________________");
