@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class TypeCast {
     public static void main(String[] args) {
         String logo =
@@ -10,12 +12,39 @@ public class TypeCast {
 
 
         System.out.println(logo + "\n");
-        System.out.println("____________________________________________________________\r\n" + //
-                        " Hello! I'm TypeCast\r\n" + //
-                        " What can I do for you?\r\n" + //
-                        "____________________________________________________________\r\n" + //
-                        " Bye. Hope to see you again soon!\r\n" + //
-                        "____________________________________________________________\r\n" + //
-                        "");
+        System.out.println("""
+                           ____________________________________________________________\r
+                            Hello! I'm TypeCast\r
+                            What can I do for you?\r
+                           ____________________________________________________________\r
+                           """ //
+        //
+        //
+        );
+        
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            
+            String task = scanner.nextLine();
+            
+            if (task.compareTo("bye") != 0) {
+                System.out.println("____________________________________________________________\r\n" + 
+                    task + "\n" + //
+                    "____________________________________________________________\r\n"
+                );
+            } else {
+                System.out.println("""
+                                   ____________________________________________________________\r
+                                    Bye. Hope to see you again soon!\r
+                                   ____________________________________________________________\r
+                                   """ //
+                //
+                );
+                break;
+            }
+            
+        }
+        scanner.close();
+        
     }
 }
