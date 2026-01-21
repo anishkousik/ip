@@ -23,9 +23,8 @@ public class TypeCast {
         );
         
         Scanner scanner = new Scanner(System.in);
-        String[] taskList = new String[101];
-        boolean[] isMarked = new boolean[101];
-        int numTasks = 1;
+        Task[] tasks = new Task[101];
+        int numTasks = 0;
         
         while (true) {
             
@@ -43,29 +42,26 @@ public class TypeCast {
             } else if (input.equals("list")) {
                 System.out.println("____________________________________________________________");
                 System.out.println("Here are the tasks in your list:");
-                for (int i = 1; i < numTasks; i++) {
-                    String status = isMarked[i] ? "X" : " ";
-                    System.out.println(i + ".[" + status + "] " + taskList[i]);
+                for (int i = 0; i < numTasks; i++) {
+                    System.out.println((i + 1) + ".[" + tasks[i].getStatus() + "] " + tasks[i].getDescription());
                 }
                 System.out.println("____________________________________________________________");
             } else if (input.startsWith("mark ")) {
-                int taskIndex = Integer.parseInt(input.substring(5));
-                isMarked[taskIndex] = true;
-                String status = "[X]";
+                int taskIndex = Integer.parseInt(input.substring(5)) - 1;
+                tasks[taskIndex].markDone();
                 System.out.println("____________________________________________________________");
                 System.out.println("Nice! I've marked this task as done:");
-                System.out.println("  " + status + " " + taskList[taskIndex]);
+                System.out.println("  [" + tasks[taskIndex].getStatus() + "] " + tasks[taskIndex].getDescription());
                 System.out.println("____________________________________________________________");
             } else if (input.startsWith("unmark ")) {
-                int taskIndex = Integer.parseInt(input.substring(7));
-                isMarked[taskIndex] = false;
-                String status = "[ ]";
+                int taskIndex = Integer.parseInt(input.substring(7)) - 1;
+                tasks[taskIndex].markNotDone();
                 System.out.println("____________________________________________________________");
                 System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("  " + status + " " + taskList[taskIndex]);
+                System.out.println("  [" + tasks[taskIndex].getStatus() + "] " + tasks[taskIndex].getDescription());
                 System.out.println("____________________________________________________________");
             } else {
-                taskList[numTasks] = input;
+                tasks[numTasks] = new Task(input);
                 numTasks++;
                 System.out.println("____________________________________________________________\r\n" + 
                     "added: " + input + "\n" + //
