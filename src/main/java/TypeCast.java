@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TypeCast {
+    private static final String FILE_PATH = "./ip/data/tasks.txt";
+    
     public static void main(String[] args) {
         String logo =
         "████████╗██╗   ██╗██████╗ ███████╗ ██████╗ █████╗ ███████╗████████╗\n"
@@ -20,8 +22,17 @@ What can I do for you?
 ____________________________________________________________
 """);
         
+
+        Storage storage = new Storage(FILE_PATH);
+        ArrayList<Task> tasks = storage.loadTasks();
+        
+
+        if (!tasks.isEmpty()) {
+            System.out.println("Loaded " + tasks.size() + " task(s) from previous session.");
+            System.out.println("____________________________________________________________");
+        }
+        
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Task> tasks = new ArrayList<>();
         
         while (true) {
             
@@ -49,6 +60,7 @@ ____________________________________________________________
                     System.out.println("Nice! I've marked this task as done:");
                     System.out.println("  " + tasks.get(taskIndex).toString());
                     System.out.println("____________________________________________________________");
+                    storage.saveTasks(tasks);
                 } else if (input.startsWith("unmark ")) {
                     int taskIndex = Integer.parseInt(input.substring(7)) - 1;
                     tasks.get(taskIndex).markNotDone();
@@ -56,6 +68,7 @@ ____________________________________________________________
                     System.out.println("OK, I've marked this task as not done yet:");
                     System.out.println("  " + tasks.get(taskIndex).toString());
                     System.out.println("____________________________________________________________");
+                    storage.saveTasks(tasks);
                 } else if (input.startsWith("delete ")) {
                     int taskIndex = Integer.parseInt(input.substring(7)) - 1;
                     if (taskIndex < 0 || taskIndex >= tasks.size()) {
@@ -67,6 +80,7 @@ ____________________________________________________________
                     System.out.println("  " + removedTask.toString());
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
+                    storage.saveTasks(tasks);
                 } else if (input.startsWith("todo ")) {
                     String description = input.substring(5).trim();
                     if (description.isEmpty()) {
@@ -78,6 +92,7 @@ ____________________________________________________________
                     System.out.println("  " + tasks.get(tasks.size() - 1).toString());
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
+                    storage.saveTasks(tasks);
                 } else if (input.startsWith("deadline ")) {
                     String rest = input.substring(9);
                     int byIndex = rest.indexOf(" /by ");
@@ -98,6 +113,7 @@ ____________________________________________________________
                     System.out.println("  " + tasks.get(tasks.size() - 1).toString());
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
+                    storage.saveTasks(tasks);
                 } else if (input.startsWith("event ")) {
                     String rest = input.substring(6);
                     int fromIndex = rest.indexOf(" /from ");
@@ -123,6 +139,7 @@ ____________________________________________________________
                     System.out.println("  " + tasks.get(tasks.size() - 1).toString());
                     System.out.println("Now you have " + tasks.size() + " tasks in the list.");
                     System.out.println("____________________________________________________________");
+                    storage.saveTasks(tasks);
                 } else if (input.equals("todo") || input.equals("deadline") || input.equals("event")) {
                     if (input.equals("todo")) {
                         throw new TypeCastException("The description of a todo cannot be empty.");
