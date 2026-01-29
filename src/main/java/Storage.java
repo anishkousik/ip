@@ -4,17 +4,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Storage {
     private final String filePath;
+    private static final DateTimeFormatter STORAGE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     
     public Storage(String filePath) {
         this.filePath = filePath;
     }
     
-    
+
     public ArrayList<Task> loadTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
         
@@ -26,12 +29,14 @@ public class Storage {
                 Files.createDirectories(parentDir);
             }
             
+
             File file = new File(filePath);
             if (!file.exists()) {
                 file.createNewFile();
                 return tasks;
             }
             
+
             List<String> lines = Files.readAllLines(path);
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i).trim();
@@ -46,6 +51,7 @@ public class Storage {
                     }
                 } catch (Exception e) {
                     System.out.println("Warning: Skipping corrupted line " + (i + 1) + ": " + line);
+                    System.out.println("  Error: " + e.getMessage());
                 }
             }
             
@@ -78,22 +84,27 @@ public class Storage {
                 if (parts.length < 4) {
                     throw new TypeCastException("Invalid deadline format: missing deadline date");
                 }
-                String by = parts[3].trim();
-                task = new Deadline(description, by);
+                String byStr = parts[3].trim();
+                try {
+                    LocalDateTime by = LocalDateTime.parse(byStr, STORAGE_FORMATTER);
+                    task = new Deadline(description, by);
+                } catch (Exception e) {
+                    throw new TypeCastException("Invalid deadline date format: " + byStr);
+                }
                 break;
             case "E":
-                if (parts.length < 4) {
+                if (parts.length < 5) {
                     throw new TypeCastException("Invalid event format: missing time range");
                 }
-                String timeRange = parts[3].trim();
-
-                int toIndex = timeRange.toLowerCase().indexOf(" to: ");
-                if (toIndex == -1) {
-                    throw new TypeCastException("Invalid event format: missing 'to' separator");
+                String fromStr = parts[3].trim();
+                String toStr = parts[4].trim();
+                try {
+                    LocalDateTime from = LocalDateTime.parse(fromStr, STORAGE_FORMATTER);
+                    LocalDateTime to = LocalDateTime.parse(toStr, STORAGE_FORMATTER);
+                    task = new Event(description, from, to);
+                } catch (Exception e) {
+                    throw new TypeCastException("Invalid event date format");
                 }
-                String from = timeRange.substring(6, toIndex).trim();
-                String to = timeRange.substring(toIndex + 5).trim();
-                task = new Event(description, from, to);
                 break;
             default:
                 throw new TypeCastException("Unknown task type: " + type);
@@ -106,10 +117,10 @@ public class Storage {
         
         return task;
     }
-    
-   
+
     public void saveTasks(ArrayList<Task> tasks) {
         try {
+
             Path path = Paths.get(filePath);
             Path parentDir = path.getParent();
             if (parentDir != null && !Files.exists(parentDir)) {
@@ -128,7 +139,7 @@ public class Storage {
         }
     }
     
-    
+
     private String formatTask(Task task) {
         String status = task.getStatus().equals("X") ? "1" : "0";
         String description = task.getDescription();
@@ -137,10 +148,10 @@ public class Storage {
             return "T | " + status + " | " + description;
         } else if (task instanceof Deadline) {
             Deadline deadline = (Deadline) task;
-            return "D | " + status + " | " + description + " | " + deadline.getBy();
+            return "D | " + status + " | " + description + " | " + deadline.getByString();
         } else if (task instanceof Event) {
             Event event = (Event) task;
-            return "E | " + status + " | " + description + " | from: " + event.getFrom() + " to: " + event.getTo();
+            return "E | " + status + " | " + description + " | " + event.getFromString() + " | " + event.getToString();
         }
         
         return "T | " + status + " | " + description;
