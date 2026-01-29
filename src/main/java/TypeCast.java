@@ -107,13 +107,17 @@ ____________________________________________________________
                     if (by.isEmpty()) {
                         throw new TypeCastException("The deadline date/time cannot be empty.");
                     }
-                    tasks.add(new Deadline(description, by));
-                    System.out.println("____________________________________________________________");
-                    System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + tasks.get(tasks.size() - 1).toString());
-                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println("____________________________________________________________");
-                    storage.saveTasks(tasks);
+                    try {
+                        tasks.add(new Deadline(description, by));
+                        System.out.println("____________________________________________________________");
+                        System.out.println("Got it. I've added this task:");
+                        System.out.println("  " + tasks.get(tasks.size() - 1).toString());
+                        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println("____________________________________________________________");
+                        storage.saveTasks(tasks); // Save after modification
+                    } catch (IllegalArgumentException e) {
+                        throw new TypeCastException(e.getMessage());
+                    }
                 } else if (input.startsWith("event ")) {
                     String rest = input.substring(6);
                     int fromIndex = rest.indexOf(" /from ");
@@ -133,13 +137,17 @@ ____________________________________________________________
                     if (to.isEmpty()) {
                         throw new TypeCastException("The event end date/time cannot be empty.");
                     }
-                    tasks.add(new Event(description, from, to));
-                    System.out.println("____________________________________________________________");
-                    System.out.println("Got it. I've added this task:");
-                    System.out.println("  " + tasks.get(tasks.size() - 1).toString());
-                    System.out.println("Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println("____________________________________________________________");
-                    storage.saveTasks(tasks);
+                    try {
+                        tasks.add(new Event(description, from, to));
+                        System.out.println("____________________________________________________________");
+                        System.out.println("Got it. I've added this task:");
+                        System.out.println("  " + tasks.get(tasks.size() - 1).toString());
+                        System.out.println("Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println("____________________________________________________________");
+                        storage.saveTasks(tasks); // Save after modification
+                    } catch (IllegalArgumentException e) {
+                        throw new TypeCastException(e.getMessage());
+                    }
                 } else if (input.equals("todo") || input.equals("deadline") || input.equals("event")) {
                     if (input.equals("todo")) {
                         throw new TypeCastException("The description of a todo cannot be empty.");
@@ -154,6 +162,14 @@ ____________________________________________________________
             } catch (TypeCastException e) {
                 System.out.println("____________________________________________________________");
                 System.out.println(" " + e.getMessage());
+                System.out.println("____________________________________________________________");
+            } catch (NumberFormatException e) {
+                System.out.println("____________________________________________________________");
+                System.out.println(" Invalid task number. Please enter a valid number.");
+                System.out.println("____________________________________________________________");
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("____________________________________________________________");
+                System.out.println(" Task index out of range.");
                 System.out.println("____________________________________________________________");
             }
             
