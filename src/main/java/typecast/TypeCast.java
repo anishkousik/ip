@@ -5,13 +5,23 @@ import typecast.storage.Storage;
 import typecast.task.TaskList;
 import typecast.ui.Ui;
 
+/**
+ * Represents the main TypeCast task management application.
+ * TypeCast allows users to manage tasks including todos, deadlines, and events.
+ */
 public class TypeCast {
 
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
 
-
+    /**
+     * Creates a TypeCast application instance with the specified file path.
+     * Initializes the UI, storage, and loads existing tasks from the file.
+     * If loading fails, starts with an empty task list.
+     *
+     * @param filePath The path to the file where tasks are stored.
+     */
     public TypeCast(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -23,7 +33,11 @@ public class TypeCast {
         }
     }
 
-
+    /**
+     * Runs the main application loop.
+     * Displays welcome message, loads tasks, processes user commands,
+     * and handles exceptions until the user exits.
+     */
     public void run() {
         ui.showWelcome();
         
@@ -46,7 +60,11 @@ public class TypeCast {
         ui.close();
     }
 
-
+    /**
+     * Entry point of the TypeCast application.
+     *
+     * @param args Command line arguments (not used).
+     */
     public static void main(String[] args) {
         new TypeCast("./data/tasks.txt").run();
     }

@@ -8,9 +8,22 @@ import typecast.task.TaskList;
 import typecast.task.Todo;
 import typecast.ui.Ui;
 
+/**
+ * Handles parsing and execution of user commands.
+ * Supports commands: list, mark, unmark, delete, todo, deadline, event, and bye.
+ */
 public class Parser {
 
-
+    /**
+     * Parses and executes the given user command.
+     *
+     * @param input The user's command input.
+     * @param tasks The task list to operate on.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting tasks.
+     * @return true if the application should continue running, false if user wants to exit.
+     * @throws TypeCastException If the command is invalid or execution fails.
+     */
     public static boolean parseCommand(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         
@@ -39,7 +52,15 @@ public class Parser {
         return true; // Continue running
     }
 
-
+    /**
+     * Handles the mark command to mark a task as done.
+     *
+     * @param input The user's input containing the task number.
+     * @param tasks The task list to modify.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting changes.
+     * @throws TypeCastException If the task number is invalid or out of range.
+     */
     private static void handleMark(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         try {
@@ -54,7 +75,15 @@ public class Parser {
         }
     }
 
-
+    /**
+     * Handles the unmark command to mark a task as not done.
+     *
+     * @param input The user's input containing the task number.
+     * @param tasks The task list to modify.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting changes.
+     * @throws TypeCastException If the task number is invalid or out of range.
+     */
     private static void handleUnmark(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         try {
@@ -69,7 +98,15 @@ public class Parser {
         }
     }
 
-
+    /**
+     * Handles the delete command to remove a task from the list.
+     *
+     * @param input The user's input containing the task number.
+     * @param tasks The task list to modify.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting changes.
+     * @throws TypeCastException If the task number is invalid.
+     */
     private static void handleDelete(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         try {
@@ -82,7 +119,15 @@ public class Parser {
         }
     }
 
-
+    /**
+     * Handles the todo command to create a new todo task.
+     *
+     * @param input The user's input containing the task description.
+     * @param tasks The task list to add the todo to.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting changes.
+     * @throws TypeCastException If the description is empty.
+     */
     private static void handleTodo(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         String description = input.substring(5).trim();
@@ -95,7 +140,15 @@ public class Parser {
         storage.saveTasks(tasks.getTasks());
     }
 
-
+    /**
+     * Handles the deadline command to create a new deadline task.
+     *
+     * @param input The user's input containing the task description and deadline.
+     * @param tasks The task list to add the deadline to.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting changes.
+     * @throws TypeCastException If the format is invalid or fields are empty.
+     */
     private static void handleDeadline(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         String rest = input.substring(9);
@@ -122,7 +175,15 @@ public class Parser {
         }
     }
 
-
+    /**
+     * Handles the event command to create a new event task.
+     *
+     * @param input The user's input containing the task description and time range.
+     * @param tasks The task list to add the event to.
+     * @param ui The user interface for displaying messages.
+     * @param storage The storage for persisting changes.
+     * @throws TypeCastException If the format is invalid or fields are empty.
+     */
     private static void handleEvent(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         String rest = input.substring(6);
@@ -154,7 +215,12 @@ public class Parser {
         }
     }
 
- 
+    /**
+     * Handles empty task commands (todo, deadline, event without arguments).
+     *
+     * @param input The command that was entered without arguments.
+     * @throws TypeCastException Always throws an exception with appropriate error message.
+     */
     private static void handleEmptyCommand(String input) throws TypeCastException {
         if (input.equals("todo")) {
             throw new TypeCastException("The description of a todo cannot be empty.");

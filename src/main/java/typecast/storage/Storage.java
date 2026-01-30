@@ -16,34 +16,46 @@ import typecast.task.Event;
 import typecast.task.Task;
 import typecast.task.Todo;
 
+/**
+ * Handles loading and saving tasks to/from a file.
+ * Tasks are stored in a pipe-delimited format with type, status, description, and date fields.
+ */
 public class Storage {
     private final String filePath;
     private static final DateTimeFormatter STORAGE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     
+    /**
+     * Creates a Storage instance with the specified file path.
+     *
+     * @param filePath The path to the file where tasks will be stored.
+     */
     public Storage(String filePath) {
         this.filePath = filePath;
     }
     
-
+    /**
+     * Loads tasks from the storage file.
+     * Creates the file and parent directories if they don't exist.
+     * Skips corrupted lines and displays warnings.
+     *
+     * @return An ArrayList of tasks loaded from the file.
+     */
     public ArrayList<Task> loadTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
         
         try {
-
             Path path = Paths.get(filePath);
             Path parentDir = path.getParent();
             if (parentDir != null && !Files.exists(parentDir)) {
                 Files.createDirectories(parentDir);
             }
             
-
             File file = new File(filePath);
             if (!file.exists()) {
                 file.createNewFile();
                 return tasks;
             }
             
-
             List<String> lines = Files.readAllLines(path);
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i).trim();
@@ -69,7 +81,14 @@ public class Storage {
         return tasks;
     }
     
-
+    /**
+     * Parses a line from the storage file into a Task object.
+     * Expected format: "TYPE | STATUS | DESCRIPTION | DATE_FIELDS"
+     *
+     * @param line The line to parse.
+     * @return The parsed Task object.
+     * @throws TypeCastException If the line format is invalid.
+     */
     private Task parseTask(String line) throws TypeCastException {
         String[] parts = line.split(" \\| ");
         
@@ -117,7 +136,6 @@ public class Storage {
                 throw new TypeCastException("Unknown task type: " + type);
         }
         
-
         if (status.equals("1")) {
             task.markDone();
         }
@@ -125,42 +143,54 @@ public class Storage {
         return task;
     }
 
+    /**
+     * Saves the list of tasks to the storage file.
+     * Overwrites the existing file with the current task list.
+     *
+     * @param tasks The ArrayList of tasks to save.
+     */
     public void saveTasks(ArrayList<Task> tasks) {
         try {
-
-            Path path = Paths.get(filePath);
-            Path parentDir = path.getParent();
-            if (parentDir != null && !Files.exists(parentDir)) {
-                Files.createDirectories(parentDir);
-            }
+            File file = new File(filePath);
+            file.getParentFile().mkdirs();
             
-
-            FileWriter writer = new FileWriter(filePath);
+            FileWriter writer = new FileWriter(file);
             for (Task task : tasks) {
-                writer.write(formatTask(task) + "\n");
+                writer.write(taskToStorageString(task) + System.lineSeparator());
             }
             writer.close();
-            
         } catch (IOException e) {
             System.out.println("Error saving tasks to file: " + e.getMessage());
         }
     }
-    
 
-    private String formatTask(Task task) {
+    /**
+     * Converts a Task object to a storage string format.
+     *
+     * @param task The task to convert.
+     * @return A pipe-delimited string representation of the task.
+     */
+    private String taskToStorageString(Task task) {
+        String type;
         String status = task.getStatus().equals("X") ? "1" : "0";
         String description = task.getDescription();
         
         if (task instanceof Todo) {
-            return "T | " + status + " | " + description;
+            type = "T";
+            return String.format("%s | %s | %s", type, status, description);
         } else if (task instanceof Deadline) {
+            type = "D";
             Deadline deadline = (Deadline) task;
-            return "D | " + status + " | " + description + " | " + deadline.getByString();
+            String by = deadline.getByString();
+            return String.format("%s | %s | %s | %s", type, status, description, by);
         } else if (task instanceof Event) {
+            type = "E";
             Event event = (Event) task;
-            return "E | " + status + " | " + description + " | " + event.getFromString() + " | " + event.getToString();
+            String from = event.getFromString();
+            String to = event.getToString();
+            return String.format("%s | %s | %s | %s | %s", type, status, description, from, to);
         }
         
-        return "T | " + status + " | " + description;
+        return "";
     }
 }
