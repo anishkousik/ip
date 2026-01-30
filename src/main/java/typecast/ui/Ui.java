@@ -1,5 +1,6 @@
 package typecast.ui;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import typecast.task.Task;
@@ -100,6 +101,24 @@ public class Ui {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println((i + 1) + "." + tasks.get(i).toString());
+        }
+        System.out.println(LINE);
+    }
+
+    /**
+     * Displays the list of matching tasks from a search.
+     *
+     * @param matchingTasks The list of tasks that match the search criteria.
+     */
+    public void showMatchingTasks(ArrayList<Task> matchingTasks) {
+        System.out.println(LINE);
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No matching tasks found.");
+        } else {
+            System.out.println("Here are the matching tasks in your list:");
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + "." + matchingTasks.get(i).toString());
+            }
         }
         System.out.println(LINE);
     }

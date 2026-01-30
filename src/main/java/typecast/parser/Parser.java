@@ -1,4 +1,7 @@
 package typecast.parser;
+
+import java.util.ArrayList;
+
 import typecast.exception.TypeCastException;
 import typecast.storage.Storage;
 import typecast.task.Deadline;
@@ -10,7 +13,7 @@ import typecast.ui.Ui;
 
 /**
  * Handles parsing and execution of user commands.
- * Supports commands: list, mark, unmark, delete, todo, deadline, event, and bye.
+ * Supports commands: list, mark, unmark, delete, todo, deadline, event, find, and bye.
  */
 public class Parser {
 
@@ -24,9 +27,9 @@ public class Parser {
      * @return true if the application should continue running, false if user wants to exit.
      * @throws TypeCastException If the command is invalid or execution fails.
      */
-    public static boolean parseCommand(String input, TaskList tasks, Ui ui, Storage storage) 
+    public static boolean parseCommand(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
-        
+
         if (input.equals("bye")) {
             return false; // Signal to exit
         } else if (input.equals("list")) {
@@ -43,12 +46,16 @@ public class Parser {
             handleDeadline(input, tasks, ui, storage);
         } else if (input.startsWith("event ")) {
             handleEvent(input, tasks, ui, storage);
+        } else if (input.startsWith("find ")) {
+            handleFind(input, tasks, ui);
         } else if (input.equals("todo") || input.equals("deadline") || input.equals("event")) {
             handleEmptyCommand(input);
+        } else if (input.equals("find")) {
+            throw new TypeCastException("Please provide a keyword to search for. Usage: find <keyword>");
         } else {
             throw new TypeCastException("Sorry, that is not a valid command!");
         }
-        
+
         return true; // Continue running
     }
 
@@ -61,7 +68,7 @@ public class Parser {
      * @param storage The storage for persisting changes.
      * @throws TypeCastException If the task number is invalid or out of range.
      */
-    private static void handleMark(String input, TaskList tasks, Ui ui, Storage storage) 
+    private static void handleMark(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
         try {
             int taskIndex = Integer.parseInt(input.substring(5)) - 1;
@@ -84,7 +91,7 @@ public class Parser {
      * @param storage The storage for persisting changes.
      * @throws TypeCastException If the task number is invalid or out of range.
      */
-    private static void handleUnmark(String input, TaskList tasks, Ui ui, Storage storage) 
+    private static void handleUnmark(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
         try {
             int taskIndex = Integer.parseInt(input.substring(7)) - 1;
@@ -107,7 +114,7 @@ public class Parser {
      * @param storage The storage for persisting changes.
      * @throws TypeCastException If the task number is invalid.
      */
-    private static void handleDelete(String input, TaskList tasks, Ui ui, Storage storage) 
+    private static void handleDelete(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
         try {
             int taskIndex = Integer.parseInt(input.substring(7)) - 1;
@@ -128,7 +135,7 @@ public class Parser {
      * @param storage The storage for persisting changes.
      * @throws TypeCastException If the description is empty.
      */
-    private static void handleTodo(String input, TaskList tasks, Ui ui, Storage storage) 
+    private static void handleTodo(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
         String description = input.substring(5).trim();
         if (description.isEmpty()) {
@@ -149,13 +156,13 @@ public class Parser {
      * @param storage The storage for persisting changes.
      * @throws TypeCastException If the format is invalid or fields are empty.
      */
-    private static void handleDeadline(String input, TaskList tasks, Ui ui, Storage storage) 
+    private static void handleDeadline(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
         String rest = input.substring(9);
         int byIndex = rest.indexOf(" /by ");
         if (byIndex == -1) {
             throw new TypeCastException(
-                "The format of deadline should be: deadline <description> /by <date/time>");
+                    "The format of deadline should be: deadline <description> /by <date/time>");
         }
         String description = rest.substring(0, byIndex).trim();
         String by = rest.substring(byIndex + 5).trim();
@@ -184,14 +191,14 @@ public class Parser {
      * @param storage The storage for persisting changes.
      * @throws TypeCastException If the format is invalid or fields are empty.
      */
-    private static void handleEvent(String input, TaskList tasks, Ui ui, Storage storage) 
+    private static void handleEvent(String input, TaskList tasks, Ui ui, Storage storage)
             throws TypeCastException {
         String rest = input.substring(6);
         int fromIndex = rest.indexOf(" /from ");
         int toIndex = rest.indexOf(" /to ");
         if (fromIndex == -1 || toIndex == -1) {
             throw new TypeCastException(
-                "The format of event should be: event <description> /from <start> /to <end>");
+                    "The format of event should be: event <description> /from <start> /to <end>");
         }
         String description = rest.substring(0, fromIndex).trim();
         String from = rest.substring(fromIndex + 7, toIndex).trim();
@@ -216,6 +223,23 @@ public class Parser {
     }
 
     /**
+     * Handles the find command to search for tasks by keyword.
+     *
+     * @param input The user's input containing the search keyword.
+     * @param tasks The task list to search.
+     * @param ui The user interface for displaying results.
+     * @throws TypeCastException If the keyword is empty.
+     */
+    private static void handleFind(String input, TaskList tasks, Ui ui) throws TypeCastException {
+        String keyword = input.substring(5).trim();
+        if (keyword.isEmpty()) {
+            throw new TypeCastException("Please provide a keyword to search for. Usage: find <keyword>");
+        }
+        ArrayList<Task> matchingTasks = tasks.findTasks(keyword);
+        ui.showMatchingTasks(matchingTasks);
+    }
+
+    /**
      * Handles empty task commands (todo, deadline, event without arguments).
      *
      * @param input The command that was entered without arguments.
@@ -226,10 +250,10 @@ public class Parser {
             throw new TypeCastException("The description of a todo cannot be empty.");
         } else if (input.equals("deadline")) {
             throw new TypeCastException(
-                "The format of deadline should be: deadline <description> /by <date/time>");
+                    "The format of deadline should be: deadline <description> /by <date/time>");
         } else {
             throw new TypeCastException(
-                "The format of event should be: event <description> /from <start> /to <end>");
+                    "The format of event should be: event <description> /from <start> /to <end>");
         }
     }
 }

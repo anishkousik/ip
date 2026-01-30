@@ -6,7 +6,7 @@ import typecast.exception.TypeCastException;
 
 /**
  * Manages a list of tasks.
- * Provides methods to add, delete, and modify tasks.
+ * Provides methods to add, delete, modify, and search tasks.
  */
 public class TaskList {
 
@@ -95,5 +95,24 @@ public class TaskList {
      */
     public ArrayList<Task> getTasks() {
         return tasks;
+    }
+
+    /**
+     * Finds all tasks whose descriptions contain the given keyword.
+     *
+     * @param keyword The keyword to search for (case-insensitive).
+     * @return ArrayList of matching tasks.
+     */
+    public ArrayList<Task> findTasks(String keyword) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        String lowerKeyword = keyword.toLowerCase();
+
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(lowerKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return matchingTasks;
     }
 }
