@@ -1,23 +1,21 @@
+package typecast.task;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Event extends Task {
+public class Deadline extends Task {
 
-    protected LocalDateTime from;
-    protected LocalDateTime to;
+    protected LocalDateTime by;
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
-    public Event(String description, String from, String to) {
+    public Deadline(String description, String by) {
         super(description);
-        this.from = parseDateTime(from);
-        this.to = parseDateTime(to);
+        this.by = parseDateTime(by);
     }
 
-    public Event(String description, LocalDateTime from, LocalDateTime to) {
+    public Deadline(String description, LocalDateTime by) {
         super(description);
-        this.from = from;
-        this.to = to;
+        this.by = by;
     }
 
 
@@ -28,7 +26,8 @@ public class Event extends Task {
         } catch (Exception e) {
             try {
 
-                return LocalDateTime.parse(dateTimeStr + " 0000", 
+                DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                return LocalDateTime.parse(dateTimeStr + " 2359", 
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
             } catch (Exception ex) {
 
@@ -38,27 +37,17 @@ public class Event extends Task {
         }
     }
 
-    public LocalDateTime getFrom() {
-        return from;
-    }
-
-    public LocalDateTime getTo() {
-        return to;
-    }
-
-    public String getFromString() {
-        return from.format(INPUT_FORMATTER);
+    public LocalDateTime getBy() {
+        return by;
     }
 
 
-    public String getToString() {
-        return to.format(INPUT_FORMATTER);
+    public String getByString() {
+        return by.format(INPUT_FORMATTER);
     }
 
     @Override
     public String toString() {
-        return "[E][" + getStatus() + "] " + description + 
-               " (from: " + from.format(OUTPUT_FORMATTER) + 
-               " to: " + to.format(OUTPUT_FORMATTER) + ")";
+        return "[D][" + getStatus() + "] " + description + " (by: " + by.format(OUTPUT_FORMATTER) + ")";
     }
 }
