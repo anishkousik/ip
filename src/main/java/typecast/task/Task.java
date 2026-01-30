@@ -1,15 +1,16 @@
 package typecast.task;
 
 /**
- * Represents a task with a description and completion status.
- * This is the base class for all task types (Todo, Deadline, Event).
+ * Represents a generic task with a description and completion status.
+ * This is the base class for specific task types like Todo, Deadline, and Event.
  */
 public class Task {
+
     protected String description;
     protected boolean isDone;
 
     /**
-     * Creates a new Task with the given description.
+     * Constructs a Task with the specified description.
      * The task is initially marked as not done.
      *
      * @param description The description of the task.
@@ -22,7 +23,7 @@ public class Task {
     /**
      * Returns the status icon of the task.
      *
-     * @return "X" if task is done, " " (space) if not done.
+     * @return "X" if the task is done, " " otherwise.
      */
     public String getStatus() {
         return (isDone ? "X" : " ");
@@ -54,11 +55,10 @@ public class Task {
     /**
      * Returns a string representation of the task.
      *
-     * @return A formatted string showing task type, status, and description.
+     * @return The formatted task string.
      */
     @Override
     public String toString() {
         return "[T][" + getStatus() + "] " + description;
     }
 }
-

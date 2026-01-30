@@ -1,34 +1,37 @@
 package typecast.ui;
+
 import java.util.Scanner;
+
 import typecast.task.Task;
 import typecast.task.TaskList;
 
 /**
- * Handles user interface interactions.
- * Responsible for displaying messages and reading user input.
+ * Handles all user interface interactions.
+ * Displays messages and reads user input.
  */
 public class Ui {
+
     private static final String LINE = "____________________________________________________________";
     private final Scanner scanner;
 
     /**
-     * Creates a new Ui instance and initializes the scanner for reading input.
+     * Constructs a Ui instance and initializes the scanner for user input.
      */
     public Ui() {
         this.scanner = new Scanner(System.in);
     }
 
     /**
-     * Displays the welcome message with the TypeCast logo.
+     * Displays the welcome message and logo.
      */
     public void showWelcome() {
         String logo =
-          " _____                   ____          _   \n"
-        + "|_   _|   _ _ __   ___  / ___|__ _ ___| |_ \n"
-        + "  | || | | | '_ \\ / _ \\| |   / _` / __| __|\n"
-        + "  | || |_| | |_) |  __/| |__| (_| \\__ \\ |_ \n"
-        + "  |_| \\__, | .__/ \\___| \\____\\__,_|___/\\__|\n"
-        + "      |___/|_|\n";
+                " _____                   ____          _   \n"
+                        + "|_   _|   _ _ __   ___  / ___|__ _ ___| |_ \n"
+                        + "  | || | | | '_ \\ / _ \\| |   / _` / __| __|\n"
+                        + "  | || |_| | |_) |  __/| |__| (_| \\__ \\ |_ \n"
+                        + "  |_| \\__, | .__/ \\___| \\____\\__,_|___/\\__|\n"
+                        + "      |___/|_|\n";
 
         System.out.println(logo + "\n");
         System.out.println(LINE);
@@ -38,7 +41,7 @@ public class Ui {
     }
 
     /**
-     * Displays the goodbye message when the user exits.
+     * Displays the goodbye message.
      */
     public void showGoodbye() {
         System.out.println(LINE);
@@ -47,7 +50,7 @@ public class Ui {
     }
 
     /**
-     * Displays an error message when tasks fail to load from file.
+     * Displays an error message when tasks fail to load.
      */
     public void showLoadingError() {
         System.out.println(LINE);
@@ -56,9 +59,9 @@ public class Ui {
     }
 
     /**
-     * Displays a message indicating how many tasks were loaded.
+     * Displays the number of tasks loaded from storage.
      *
-     * @param count The number of tasks loaded from storage.
+     * @param count The number of tasks loaded.
      */
     public void showTasksLoaded(int count) {
         System.out.println("Loaded " + count + " task(s) from previous session.");
@@ -90,7 +93,7 @@ public class Ui {
     /**
      * Displays the list of all tasks.
      *
-     * @param tasks The TaskList containing all tasks to display.
+     * @param tasks The TaskList to display.
      */
     public void showTaskList(TaskList tasks) {
         System.out.println(LINE);
@@ -102,9 +105,9 @@ public class Ui {
     }
 
     /**
-     * Displays a confirmation message when a task is marked as done.
+     * Displays a message when a task is marked as done.
      *
-     * @param task The task that was marked as done.
+     * @param task The task that was marked.
      */
     public void showTaskMarked(Task task) {
         System.out.println(LINE);
@@ -114,9 +117,9 @@ public class Ui {
     }
 
     /**
-     * Displays a confirmation message when a task is marked as not done.
+     * Displays a message when a task is unmarked.
      *
-     * @param task The task that was marked as not done.
+     * @param task The task that was unmarked.
      */
     public void showTaskUnmarked(Task task) {
         System.out.println(LINE);
@@ -126,7 +129,7 @@ public class Ui {
     }
 
     /**
-     * Displays a confirmation message when a task is added.
+     * Displays a message when a task is added.
      *
      * @param task The task that was added.
      * @param totalTasks The total number of tasks after adding.
@@ -140,7 +143,7 @@ public class Ui {
     }
 
     /**
-     * Displays a confirmation message when a task is deleted.
+     * Displays a message when a task is deleted.
      *
      * @param task The task that was deleted.
      * @param totalTasks The total number of tasks after deletion.
@@ -156,14 +159,14 @@ public class Ui {
     /**
      * Reads a command from the user.
      *
-     * @return The user's input as a string.
+     * @return The user's input as a trimmed string.
      */
     public String readCommand() {
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
-     * Closes the scanner to release resources.
+     * Closes the scanner.
      */
     public void close() {
         scanner.close();

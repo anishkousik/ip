@@ -1,4 +1,5 @@
 package typecast;
+
 import typecast.exception.TypeCastException;
 import typecast.parser.Parser;
 import typecast.storage.Storage;
@@ -6,8 +7,8 @@ import typecast.task.TaskList;
 import typecast.ui.Ui;
 
 /**
- * Represents the main TypeCast task management application.
- * TypeCast allows users to manage tasks including todos, deadlines, and events.
+ * Main class for the TypeCast application.
+ * Manages the initialization and execution of the task management system.
  */
 public class TypeCast {
 
@@ -16,9 +17,7 @@ public class TypeCast {
     private Ui ui;
 
     /**
-     * Creates a TypeCast application instance with the specified file path.
-     * Initializes the UI, storage, and loads existing tasks from the file.
-     * If loading fails, starts with an empty task list.
+     * Constructs a TypeCast instance with the specified file path for data storage.
      *
      * @param filePath The path to the file where tasks are stored.
      */
@@ -35,17 +34,15 @@ public class TypeCast {
 
     /**
      * Runs the main application loop.
-     * Displays welcome message, loads tasks, processes user commands,
-     * and handles exceptions until the user exits.
+     * Displays welcome message, loads tasks, processes user commands until exit.
      */
     public void run() {
         ui.showWelcome();
-        
 
         if (tasks.size() > 0) {
             ui.showTasksLoaded(tasks.size());
         }
-        
+
         boolean isRunning = true;
         while (isRunning) {
             try {
@@ -55,7 +52,7 @@ public class TypeCast {
                 ui.showError(e.getMessage());
             }
         }
-        
+
         ui.showGoodbye();
         ui.close();
     }
