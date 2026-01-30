@@ -1,25 +1,28 @@
 package typecast.task;
+
 import java.util.ArrayList;
+
 import typecast.exception.TypeCastException;
 
 /**
  * Manages a list of tasks.
- * Provides methods to add, delete, retrieve, and modify tasks in the list.
+ * Provides methods to add, delete, modify, and search tasks.
  */
 public class TaskList {
+
     private final ArrayList<Task> tasks;
 
     /**
-     * Creates a new empty TaskList.
+     * Constructs an empty TaskList.
      */
     public TaskList() {
         this.tasks = new ArrayList<>();
     }
 
     /**
-     * Creates a TaskList with the given list of tasks.
+     * Constructs a TaskList with the given list of tasks.
      *
-     * @param tasks The ArrayList of tasks to initialize the TaskList with.
+     * @param tasks The initial list of tasks.
      */
     public TaskList(ArrayList<Task> tasks) {
         this.tasks = tasks;
@@ -35,9 +38,9 @@ public class TaskList {
     }
 
     /**
-     * Deletes a task from the list at the specified index.
+     * Deletes a task at the specified index.
      *
-     * @param index The zero-based index of the task to delete.
+     * @param index The index of the task to delete.
      * @return The deleted task.
      * @throws TypeCastException If the index is out of range.
      */
@@ -49,9 +52,9 @@ public class TaskList {
     }
 
     /**
-     * Retrieves a task from the list at the specified index.
+     * Gets the task at the specified index.
      *
-     * @param index The zero-based index of the task to retrieve.
+     * @param index The index of the task.
      * @return The task at the specified index.
      */
     public Task get(int index) {
@@ -59,18 +62,18 @@ public class TaskList {
     }
 
     /**
-     * Marks a task as done at the specified index.
+     * Marks the task at the specified index as done.
      *
-     * @param index The zero-based index of the task to mark as done.
+     * @param index The index of the task to mark as done.
      */
     public void markTaskDone(int index) {
         tasks.get(index).markDone();
     }
 
     /**
-     * Marks a task as not done at the specified index.
+     * Marks the task at the specified index as not done.
      *
-     * @param index The zero-based index of the task to mark as not done.
+     * @param index The index of the task to mark as not done.
      */
     public void markTaskNotDone(int index) {
         tasks.get(index).markNotDone();
@@ -88,9 +91,28 @@ public class TaskList {
     /**
      * Returns the underlying ArrayList of tasks.
      *
-     * @return The ArrayList containing all tasks.
+     * @return The ArrayList of tasks.
      */
     public ArrayList<Task> getTasks() {
         return tasks;
+    }
+
+    /**
+     * Finds all tasks whose descriptions contain the given keyword.
+     *
+     * @param keyword The keyword to search for (case-insensitive).
+     * @return ArrayList of matching tasks.
+     */
+    public ArrayList<Task> findTasks(String keyword) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        String lowerKeyword = keyword.toLowerCase();
+
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(lowerKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return matchingTasks;
     }
 }
