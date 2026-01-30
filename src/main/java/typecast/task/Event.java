@@ -1,20 +1,24 @@
+package typecast.task;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class Deadline extends Task {
+public class Event extends Task {
 
-    protected LocalDateTime by;
+    protected LocalDateTime from;
+    protected LocalDateTime to;
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
 
-    public Deadline(String description, String by) {
+    public Event(String description, String from, String to) {
         super(description);
-        this.by = parseDateTime(by);
+        this.from = parseDateTime(from);
+        this.to = parseDateTime(to);
     }
 
-    public Deadline(String description, LocalDateTime by) {
+    public Event(String description, LocalDateTime from, LocalDateTime to) {
         super(description);
-        this.by = by;
+        this.from = from;
+        this.to = to;
     }
 
 
@@ -25,8 +29,7 @@ public class Deadline extends Task {
         } catch (Exception e) {
             try {
 
-                DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                return LocalDateTime.parse(dateTimeStr + " 2359", 
+                return LocalDateTime.parse(dateTimeStr + " 0000", 
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
             } catch (Exception ex) {
 
@@ -36,17 +39,27 @@ public class Deadline extends Task {
         }
     }
 
-    public LocalDateTime getBy() {
-        return by;
+    public LocalDateTime getFrom() {
+        return from;
+    }
+
+    public LocalDateTime getTo() {
+        return to;
+    }
+
+    public String getFromString() {
+        return from.format(INPUT_FORMATTER);
     }
 
 
-    public String getByString() {
-        return by.format(INPUT_FORMATTER);
+    public String getToString() {
+        return to.format(INPUT_FORMATTER);
     }
 
     @Override
     public String toString() {
-        return "[D][" + getStatus() + "] " + description + " (by: " + by.format(OUTPUT_FORMATTER) + ")";
+        return "[E][" + getStatus() + "] " + description + 
+               " (from: " + from.format(OUTPUT_FORMATTER) + 
+               " to: " + to.format(OUTPUT_FORMATTER) + ")";
     }
 }
