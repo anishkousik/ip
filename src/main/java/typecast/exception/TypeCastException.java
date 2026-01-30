@@ -2,12 +2,12 @@ package typecast.exception;
 
 /**
  * Represents exceptions specific to the TypeCast application.
- * This exception is thrown when user commands are invalid or operations fail.
+ * Used to signal errors in command parsing and task operations.
  */
 public class TypeCastException extends Exception {
-    
+
     /**
-     * Creates a new TypeCastException with the specified error message.
+     * Constructs a TypeCastException with the specified error message.
      *
      * @param message The detailed error message.
      */
