@@ -3,7 +3,6 @@ package typecast.task;
 import typecast.exception.TypeCastException;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 /**
  * Manages the list of tasks, providing operations to add, delete, and access tasks.
@@ -16,12 +15,14 @@ public class TaskList {
      */
     public TaskList() {
         this.tasks = new ArrayList<>();
+        assert tasks != null : "Task list should be initialized";
     }
 
     /**
      * Creates a TaskList with existing tasks.
      */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "Tasks cannot be null";
         this.tasks = tasks;
     }
 
@@ -29,7 +30,9 @@ public class TaskList {
      * Adds a task to the list.
      */
     public void add(Task task) {
+        assert task != null : "Cannot add null task";
         tasks.add(task);
+        assert tasks.contains(task) : "Task should be in list after adding";
     }
 
     /**
@@ -39,10 +42,15 @@ public class TaskList {
      * @throws TypeCastException if the index is out of range
      */
     public Task delete(int index) throws TypeCastException {
+        assert index >= 0 : "Index cannot be negative";
         if (index < 0 || index >= tasks.size()) {
             throw new TypeCastException("Task index out of range.");
         }
-        return tasks.remove(index);
+        int sizeBefore = tasks.size();
+        Task removedTask = tasks.remove(index);
+        assert tasks.size() == sizeBefore - 1 : "Size should decrease by 1 after deletion";
+        assert removedTask != null : "Removed task should not be null";
+        return removedTask;
     }
 
     /**
@@ -51,7 +59,10 @@ public class TaskList {
      * @return The task at the specified index
      */
     public Task get(int index) {
-        return tasks.get(index);
+        assert index >= 0 && index < tasks.size() : "Index out of bounds";
+        Task task = tasks.get(index);
+        assert task != null : "Retrieved task should not be null";
+        return task;
     }
 
     /**
@@ -60,7 +71,9 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public void markTaskDone(int index) {
+        assert index >= 0 && index < tasks.size() : "Index must be valid";
         tasks.get(index).markDone();
+        assert tasks.get(index).getStatus().equals("X") : "Task should be marked as done";
     }
 
     /**
@@ -69,76 +82,25 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public void markTaskNotDone(int index) {
+        assert index >= 0 && index < tasks.size() : "Index must be valid";
         tasks.get(index).markNotDone();
+        assert tasks.get(index).getStatus().equals(" ") : "Task should be marked as not done";
     }
 
     /**
      * Returns the number of tasks in the list.
      */
     public int size() {
-        return tasks.size();
+        int size = tasks.size();
+        assert size >= 0 : "Size cannot be negative";
+        return size;
     }
 
     /**
      * Returns the ArrayList of tasks (for storage purposes).
      */
     public ArrayList<Task> getTasks() {
+        assert tasks != null : "Tasks list should never be null";
         return tasks;
-    }
-
-    /**
-     * Finds tasks that contain the given keyword in their description.
-     * Uses Java Streams for filtering.
-     * @param keyword The keyword to search for
-     * @return List of matching tasks
-     */
-    public ArrayList<Task> findTasks(String keyword) {
-        return tasks.stream()
-                .filter(task -> task.getDescription().toLowerCase().contains(keyword.toLowerCase()))
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
-     * Gets all tasks that are marked as done.
-     * Uses Java Streams for filtering.
-     * @return List of completed tasks
-     */
-    public ArrayList<Task> getCompletedTasks() {
-        return tasks.stream()
-                .filter(task -> task.getStatus().equals("X"))
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
-     * Gets all tasks that are not done yet.
-     * Uses Java Streams for filtering.
-     * @return List of pending tasks
-     */
-    public ArrayList<Task> getPendingTasks() {
-        return tasks.stream()
-                .filter(task -> task.getStatus().equals(" "))
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
-     * Checks if there are any tasks matching the keyword.
-     * Uses Java Streams.
-     * @param keyword The keyword to search for
-     * @return true if at least one task matches
-     */
-    public boolean hasTaskWithKeyword(String keyword) {
-        return tasks.stream()
-                .anyMatch(task -> task.getDescription().toLowerCase().contains(keyword.toLowerCase()));
-    }
-
-    /**
-     * Counts the number of completed tasks.
-     * Uses Java Streams.
-     * @return Number of completed tasks
-     */
-    public long countCompletedTasks() {
-        return tasks.stream()
-                .filter(task -> task.getStatus().equals("X"))
-                .count();
     }
 }
