@@ -4,6 +4,7 @@ import typecast.exception.TypeCastException;
 import typecast.storage.Storage;
 import typecast.task.Deadline;
 import typecast.task.Event;
+import typecast.task.Period;
 import typecast.task.Task;
 import typecast.task.TaskList;
 import typecast.task.Todo;
@@ -16,17 +17,6 @@ import java.util.ArrayList;
  */
 public class Parser {
 
-    private static final int INDEX_OFFSET = 1; // Convert 1-based user input to 0-based array index
-    private static final String COMMAND_TODO = "todo";
-    private static final String COMMAND_DEADLINE = "deadline";
-    private static final String COMMAND_EVENT = "event";
-    private static final String DELIMITER_BY = " /by ";
-    private static final String DELIMITER_FROM = " /from ";
-    private static final String DELIMITER_TO = " /to ";
-
-    /**
-     * Parses a user command and returns response string (for GUI).
-     */
     public static String parseCommandForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
         
@@ -34,19 +24,23 @@ public class Parser {
             return "Bye. Hope to see you again soon!";
         } else if (input.equals("list")) {
             return formatTaskList(tasks);
+        } else if (input.startsWith("find ")) {
+            return handleFindForGui(input, tasks);
         } else if (input.startsWith("mark ")) {
             return handleMarkForGui(input, tasks, storage);
         } else if (input.startsWith("unmark ")) {
             return handleUnmarkForGui(input, tasks, storage);
         } else if (input.startsWith("delete ")) {
             return handleDeleteForGui(input, tasks, storage);
-        } else if (input.startsWith(COMMAND_TODO + " ")) {
+        } else if (input.startsWith("todo ")) {
             return handleTodoForGui(input, tasks, storage);
-        } else if (input.startsWith(COMMAND_DEADLINE + " ")) {
+        } else if (input.startsWith("deadline ")) {
             return handleDeadlineForGui(input, tasks, storage);
-        } else if (input.startsWith(COMMAND_EVENT + " ")) {
+        } else if (input.startsWith("event ")) {
             return handleEventForGui(input, tasks, storage);
-        } else if (isEmptyCommand(input)) {
+        } else if (input.startsWith("period ")) {
+            return handlePeriodForGui(input, tasks, storage);
+        } else if (input.equals("todo") || input.equals("deadline") || input.equals("event") || input.equals("period")) {
             handleEmptyCommand(input);
             return "";
         } else {
@@ -54,45 +48,81 @@ public class Parser {
         }
     }
 
-    /**
-     * Checks if the command is an empty task command.
-     */
-    private static boolean isEmptyCommand(String input) {
-        return input.equals(COMMAND_TODO) || input.equals(COMMAND_DEADLINE) || input.equals(COMMAND_EVENT);
+    private static String handlePeriodForGui(String input, TaskList tasks, Storage storage) 
+            throws TypeCastException {
+        String rest = input.substring(7);
+        int withinIndex = rest.indexOf(" /within ");
+        int toIndex = rest.indexOf(" /to ");
+        
+        if (withinIndex == -1 || toIndex == -1) {
+            throw new TypeCastException(
+                "The format of period should be: period <description> /within <start> /to <end>");
+        }
+        
+        String description = rest.substring(0, withinIndex).trim();
+        String start = rest.substring(withinIndex + 9, toIndex).trim();
+        String end = rest.substring(toIndex + 5).trim();
+        
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of a period cannot be empty.");
+        }
+        if (start.isEmpty()) {
+            throw new TypeCastException("The period start date/time cannot be empty.");
+        }
+        if (end.isEmpty()) {
+            throw new TypeCastException("The period end date/time cannot be empty.");
+        }
+        
+        try {
+            Task task = new Period(description, start, end);
+            tasks.add(task);
+            storage.saveTasks(tasks.getTasks());
+            return "Got it. I've added this task:\n  " + task.toString() + 
+                   "\nNow you have " + tasks.size() + " tasks in the list.";
+        } catch (IllegalArgumentException e) {
+            throw new TypeCastException(e.getMessage());
+        }
     }
 
-    /**
-     * Formats the task list as a string.
-     */
+    private static String handleFindForGui(String input, TaskList tasks) throws TypeCastException {
+        String keyword = input.substring(5).trim();
+        if (keyword.isEmpty()) {
+            throw new TypeCastException("The search keyword cannot be empty.");
+        }
+        
+        ArrayList<Task> matchingTasks = tasks.findTasks(keyword);
+        
+        if (matchingTasks.isEmpty()) {
+            return "No matching tasks found.";
+        }
+        
+        StringBuilder sb = new StringBuilder("Here are the matching tasks in your list:\n");
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            sb.append((i + 1)).append(".").append(matchingTasks.get(i).toString()).append("\n");
+        }
+        return sb.toString().trim();
+    }
+
     private static String formatTaskList(TaskList tasks) {
         if (tasks.size() == 0) {
             return "You have no tasks in your list.";
         }
         StringBuilder sb = new StringBuilder("Here are the tasks in your list:\n");
         for (int i = 0; i < tasks.size(); i++) {
-            sb.append(i + 1).append(".").append(tasks.get(i).toString()).append("\n");
+            sb.append((i + 1)).append(".").append(tasks.get(i).toString()).append("\n");
         }
         return sb.toString().trim();
-    }
-
-    /**
-     * Extracts the task index from user input.
-     */
-    private static int extractTaskIndex(String input, int startPosition) throws TypeCastException {
-        try {
-            return Integer.parseInt(input.substring(startPosition)) - INDEX_OFFSET;
-        } catch (NumberFormatException e) {
-            throw new TypeCastException("Invalid task number. Please enter a valid number.");
-        }
     }
 
     private static String handleMarkForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
         try {
-            int taskIndex = extractTaskIndex(input, 5);
+            int taskIndex = Integer.parseInt(input.substring(5)) - 1;
             tasks.markTaskDone(taskIndex);
             storage.saveTasks(tasks.getTasks());
             return "Nice! I've marked this task as done:\n  " + tasks.get(taskIndex).toString();
+        } catch (NumberFormatException e) {
+            throw new TypeCastException("Invalid task number. Please enter a valid number.");
         } catch (IndexOutOfBoundsException e) {
             throw new TypeCastException("Task index out of range.");
         }
@@ -101,10 +131,12 @@ public class Parser {
     private static String handleUnmarkForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
         try {
-            int taskIndex = extractTaskIndex(input, 7);
+            int taskIndex = Integer.parseInt(input.substring(7)) - 1;
             tasks.markTaskNotDone(taskIndex);
             storage.saveTasks(tasks.getTasks());
             return "OK, I've marked this task as not done yet:\n  " + tasks.get(taskIndex).toString();
+        } catch (NumberFormatException e) {
+            throw new TypeCastException("Invalid task number. Please enter a valid number.");
         } catch (IndexOutOfBoundsException e) {
             throw new TypeCastException("Task index out of range.");
         }
@@ -112,64 +144,52 @@ public class Parser {
 
     private static String handleDeleteForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
-        int taskIndex = extractTaskIndex(input, 7);
-        Task removedTask = tasks.delete(taskIndex);
-        storage.saveTasks(tasks.getTasks());
-        return buildTaskRemovedMessage(removedTask, tasks.size());
-    }
-
-    private static String buildTaskRemovedMessage(Task task, int remainingTasks) {
-        return "Noted. I've removed this task:\n  " + task.toString() + 
-               "\nNow you have " + remainingTasks + " tasks in the list.";
+        try {
+            int taskIndex = Integer.parseInt(input.substring(7)) - 1;
+            Task removedTask = tasks.delete(taskIndex);
+            storage.saveTasks(tasks.getTasks());
+            return "Noted. I've removed this task:\n  " + removedTask.toString() + 
+                   "\nNow you have " + tasks.size() + " tasks in the list.";
+        } catch (NumberFormatException e) {
+            throw new TypeCastException("Invalid task number. Please enter a valid number.");
+        }
     }
 
     private static String handleTodoForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
-        String description = extractDescription(input, COMMAND_TODO.length());
-        validateNonEmpty(description, "todo");
-        
+        String description = input.substring(5).trim();
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of a todo cannot be empty.");
+        }
         Task task = new Todo(description);
         tasks.add(task);
         storage.saveTasks(tasks.getTasks());
-        return buildTaskAddedMessage(task, tasks.size());
-    }
-
-    private static String buildTaskAddedMessage(Task task, int totalTasks) {
         return "Got it. I've added this task:\n  " + task.toString() + 
-               "\nNow you have " + totalTasks + " tasks in the list.";
-    }
-
-    private static String extractDescription(String input, int commandLength) {
-        return input.substring(commandLength + 1).trim();
-    }
-
-    private static void validateNonEmpty(String text, String fieldName) throws TypeCastException {
-        if (text.isEmpty()) {
-            throw new TypeCastException("The " + fieldName + " cannot be empty.");
-        }
+               "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
     private static String handleDeadlineForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
-        String rest = input.substring(COMMAND_DEADLINE.length() + 1);
-        int byIndex = rest.indexOf(DELIMITER_BY);
-        
+        String rest = input.substring(9);
+        int byIndex = rest.indexOf(" /by ");
         if (byIndex == -1) {
             throw new TypeCastException(
                 "The format of deadline should be: deadline <description> /by <date/time>");
         }
-        
         String description = rest.substring(0, byIndex).trim();
-        String by = rest.substring(byIndex + DELIMITER_BY.length()).trim();
-        
-        validateNonEmpty(description, "description of a deadline");
-        validateNonEmpty(by, "deadline date/time");
-        
+        String by = rest.substring(byIndex + 5).trim();
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of a deadline cannot be empty.");
+        }
+        if (by.isEmpty()) {
+            throw new TypeCastException("The deadline date/time cannot be empty.");
+        }
         try {
             Task task = new Deadline(description, by);
             tasks.add(task);
             storage.saveTasks(tasks.getTasks());
-            return buildTaskAddedMessage(task, tasks.size());
+            return "Got it. I've added this task:\n  " + task.toString() + 
+                   "\nNow you have " + tasks.size() + " tasks in the list.";
         } catch (IllegalArgumentException e) {
             throw new TypeCastException(e.getMessage());
         }
@@ -177,36 +197,36 @@ public class Parser {
 
     private static String handleEventForGui(String input, TaskList tasks, Storage storage) 
             throws TypeCastException {
-        String rest = input.substring(COMMAND_EVENT.length() + 1);
-        int fromIndex = rest.indexOf(DELIMITER_FROM);
-        int toIndex = rest.indexOf(DELIMITER_TO);
-        
+        String rest = input.substring(6);
+        int fromIndex = rest.indexOf(" /from ");
+        int toIndex = rest.indexOf(" /to ");
         if (fromIndex == -1 || toIndex == -1) {
             throw new TypeCastException(
                 "The format of event should be: event <description> /from <start> /to <end>");
         }
-        
         String description = rest.substring(0, fromIndex).trim();
-        String from = rest.substring(fromIndex + DELIMITER_FROM.length(), toIndex).trim();
-        String to = rest.substring(toIndex + DELIMITER_TO.length()).trim();
-        
-        validateNonEmpty(description, "description of an event");
-        validateNonEmpty(from, "event start date/time");
-        validateNonEmpty(to, "event end date/time");
-        
+        String from = rest.substring(fromIndex + 7, toIndex).trim();
+        String to = rest.substring(toIndex + 5).trim();
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of an event cannot be empty.");
+        }
+        if (from.isEmpty()) {
+            throw new TypeCastException("The event start date/time cannot be empty.");
+        }
+        if (to.isEmpty()) {
+            throw new TypeCastException("The event end date/time cannot be empty.");
+        }
         try {
             Task task = new Event(description, from, to);
             tasks.add(task);
             storage.saveTasks(tasks.getTasks());
-            return buildTaskAddedMessage(task, tasks.size());
+            return "Got it. I've added this task:\n  " + task.toString() + 
+                   "\nNow you have " + tasks.size() + " tasks in the list.";
         } catch (IllegalArgumentException e) {
             throw new TypeCastException(e.getMessage());
         }
     }
 
-    /**
-     * Parses a user command and executes it (for CLI).
-     */
     public static boolean parseCommand(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         
@@ -214,19 +234,23 @@ public class Parser {
             return false;
         } else if (input.equals("list")) {
             ui.showTaskList(tasks);
+        } else if (input.startsWith("find ")) {
+            handleFind(input, tasks, ui);
         } else if (input.startsWith("mark ")) {
             handleMark(input, tasks, ui, storage);
         } else if (input.startsWith("unmark ")) {
             handleUnmark(input, tasks, ui, storage);
         } else if (input.startsWith("delete ")) {
             handleDelete(input, tasks, ui, storage);
-        } else if (input.startsWith(COMMAND_TODO + " ")) {
+        } else if (input.startsWith("todo ")) {
             handleTodo(input, tasks, ui, storage);
-        } else if (input.startsWith(COMMAND_DEADLINE + " ")) {
+        } else if (input.startsWith("deadline ")) {
             handleDeadline(input, tasks, ui, storage);
-        } else if (input.startsWith(COMMAND_EVENT + " ")) {
+        } else if (input.startsWith("event ")) {
             handleEvent(input, tasks, ui, storage);
-        } else if (isEmptyCommand(input)) {
+        } else if (input.startsWith("period ")) {
+            handlePeriod(input, tasks, ui, storage);
+        } else if (input.equals("todo") || input.equals("deadline") || input.equals("event") || input.equals("period")) {
             handleEmptyCommand(input);
         } else {
             throw new TypeCastException("Sorry, that is not a valid command!");
@@ -235,13 +259,70 @@ public class Parser {
         return true;
     }
 
+    private static void handlePeriod(String input, TaskList tasks, Ui ui, Storage storage) 
+            throws TypeCastException {
+        String rest = input.substring(7);
+        int withinIndex = rest.indexOf(" /within ");
+        int toIndex = rest.indexOf(" /to ");
+        
+        if (withinIndex == -1 || toIndex == -1) {
+            throw new TypeCastException(
+                "The format of period should be: period <description> /within <start> /to <end>");
+        }
+        
+        String description = rest.substring(0, withinIndex).trim();
+        String start = rest.substring(withinIndex + 9, toIndex).trim();
+        String end = rest.substring(toIndex + 5).trim();
+        
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of a period cannot be empty.");
+        }
+        if (start.isEmpty()) {
+            throw new TypeCastException("The period start date/time cannot be empty.");
+        }
+        if (end.isEmpty()) {
+            throw new TypeCastException("The period end date/time cannot be empty.");
+        }
+        
+        try {
+            Task task = new Period(description, start, end);
+            tasks.add(task);
+            ui.showTaskAdded(task, tasks.size());
+            storage.saveTasks(tasks.getTasks());
+        } catch (IllegalArgumentException e) {
+            throw new TypeCastException(e.getMessage());
+        }
+    }
+
+    private static void handleFind(String input, TaskList tasks, Ui ui) throws TypeCastException {
+        String keyword = input.substring(5).trim();
+        if (keyword.isEmpty()) {
+            throw new TypeCastException("The search keyword cannot be empty.");
+        }
+        
+        ArrayList<Task> matchingTasks = tasks.findTasks(keyword);
+        
+        System.out.println("____________________________________________________________");
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No matching tasks found.");
+        } else {
+            System.out.println("Here are the matching tasks in your list:");
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + "." + matchingTasks.get(i).toString());
+            }
+        }
+        System.out.println("____________________________________________________________");
+    }
+
     private static void handleMark(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         try {
-            int taskIndex = extractTaskIndex(input, 5);
+            int taskIndex = Integer.parseInt(input.substring(5)) - 1;
             tasks.markTaskDone(taskIndex);
             ui.showTaskMarked(tasks.get(taskIndex));
             storage.saveTasks(tasks.getTasks());
+        } catch (NumberFormatException e) {
+            throw new TypeCastException("Invalid task number. Please enter a valid number.");
         } catch (IndexOutOfBoundsException e) {
             throw new TypeCastException("Task index out of range.");
         }
@@ -250,10 +331,12 @@ public class Parser {
     private static void handleUnmark(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
         try {
-            int taskIndex = extractTaskIndex(input, 7);
+            int taskIndex = Integer.parseInt(input.substring(7)) - 1;
             tasks.markTaskNotDone(taskIndex);
             ui.showTaskUnmarked(tasks.get(taskIndex));
             storage.saveTasks(tasks.getTasks());
+        } catch (NumberFormatException e) {
+            throw new TypeCastException("Invalid task number. Please enter a valid number.");
         } catch (IndexOutOfBoundsException e) {
             throw new TypeCastException("Task index out of range.");
         }
@@ -261,17 +344,22 @@ public class Parser {
 
     private static void handleDelete(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
-        int taskIndex = extractTaskIndex(input, 7);
-        Task removedTask = tasks.delete(taskIndex);
-        ui.showTaskDeleted(removedTask, tasks.size());
-        storage.saveTasks(tasks.getTasks());
+        try {
+            int taskIndex = Integer.parseInt(input.substring(7)) - 1;
+            Task removedTask = tasks.delete(taskIndex);
+            ui.showTaskDeleted(removedTask, tasks.size());
+            storage.saveTasks(tasks.getTasks());
+        } catch (NumberFormatException e) {
+            throw new TypeCastException("Invalid task number. Please enter a valid number.");
+        }
     }
 
     private static void handleTodo(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
-        String description = extractDescription(input, COMMAND_TODO.length());
-        validateNonEmpty(description, "todo");
-        
+        String description = input.substring(5).trim();
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of a todo cannot be empty.");
+        }
         Task task = new Todo(description);
         tasks.add(task);
         ui.showTaskAdded(task, tasks.size());
@@ -280,20 +368,20 @@ public class Parser {
 
     private static void handleDeadline(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
-        String rest = input.substring(COMMAND_DEADLINE.length() + 1);
-        int byIndex = rest.indexOf(DELIMITER_BY);
-        
+        String rest = input.substring(9);
+        int byIndex = rest.indexOf(" /by ");
         if (byIndex == -1) {
             throw new TypeCastException(
                 "The format of deadline should be: deadline <description> /by <date/time>");
         }
-        
         String description = rest.substring(0, byIndex).trim();
-        String by = rest.substring(byIndex + DELIMITER_BY.length()).trim();
-        
-        validateNonEmpty(description, "description of a deadline");
-        validateNonEmpty(by, "deadline date/time");
-        
+        String by = rest.substring(byIndex + 5).trim();
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of a deadline cannot be empty.");
+        }
+        if (by.isEmpty()) {
+            throw new TypeCastException("The deadline date/time cannot be empty.");
+        }
         try {
             Task task = new Deadline(description, by);
             tasks.add(task);
@@ -306,23 +394,25 @@ public class Parser {
 
     private static void handleEvent(String input, TaskList tasks, Ui ui, Storage storage) 
             throws TypeCastException {
-        String rest = input.substring(COMMAND_EVENT.length() + 1);
-        int fromIndex = rest.indexOf(DELIMITER_FROM);
-        int toIndex = rest.indexOf(DELIMITER_TO);
-        
+        String rest = input.substring(6);
+        int fromIndex = rest.indexOf(" /from ");
+        int toIndex = rest.indexOf(" /to ");
         if (fromIndex == -1 || toIndex == -1) {
             throw new TypeCastException(
                 "The format of event should be: event <description> /from <start> /to <end>");
         }
-        
         String description = rest.substring(0, fromIndex).trim();
-        String from = rest.substring(fromIndex + DELIMITER_FROM.length(), toIndex).trim();
-        String to = rest.substring(toIndex + DELIMITER_TO.length()).trim();
-        
-        validateNonEmpty(description, "description of an event");
-        validateNonEmpty(from, "event start date/time");
-        validateNonEmpty(to, "event end date/time");
-        
+        String from = rest.substring(fromIndex + 7, toIndex).trim();
+        String to = rest.substring(toIndex + 5).trim();
+        if (description.isEmpty()) {
+            throw new TypeCastException("The description of an event cannot be empty.");
+        }
+        if (from.isEmpty()) {
+            throw new TypeCastException("The event start date/time cannot be empty.");
+        }
+        if (to.isEmpty()) {
+            throw new TypeCastException("The event end date/time cannot be empty.");
+        }
         try {
             Task task = new Event(description, from, to);
             tasks.add(task);
@@ -334,11 +424,14 @@ public class Parser {
     }
 
     private static void handleEmptyCommand(String input) throws TypeCastException {
-        if (input.equals(COMMAND_TODO)) {
+        if (input.equals("todo")) {
             throw new TypeCastException("The description of a todo cannot be empty.");
-        } else if (input.equals(COMMAND_DEADLINE)) {
+        } else if (input.equals("deadline")) {
             throw new TypeCastException(
                 "The format of deadline should be: deadline <description> /by <date/time>");
+        } else if (input.equals("period")) {
+            throw new TypeCastException(
+                "The format of period should be: period <description> /within <start> /to <end>");
         } else {
             throw new TypeCastException(
                 "The format of event should be: event <description> /from <start> /to <end>");
