@@ -1,41 +1,85 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'jacoco'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
+
+group 'typecast'
+version '0.1.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+javafx {
+    version = "17.0.7"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+application {
+    mainClass.set('typecast.Launcher')
+}
+
+run {
+    standardInput = System.in
+    standardOutput = System.out
 }
 
 test {
     useJUnitPlatform()
-
+    
     testLogging {
         events "passed", "skipped", "failed"
-
-        showExceptions true
-        exceptionFormat "full"
-        showCauses true
-        showStackTraces true
         showStandardStreams = false
+    }
+    
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+    dependsOn test
+    
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                'typecast/TypeCast.class',
+                'typecast/Launcher.class',
+                'typecast/ui/MainWindow.class',
+                'typecast/ui/DialogBox.class'
+            ])
+        }))
     }
 }
 
-application {
-    mainClass.set("typecast.TypeCast")
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
-shadowJar {
-    archiveBaseName = "typecast"
-    archiveClassifier = null
-}
-
-run{
-    standardInput = System.in
+task fatJar(type: Jar) {
+    archiveClassifier = 'all'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': 'typecast.Launcher'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
 }

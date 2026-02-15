@@ -7,8 +7,8 @@ import typecast.task.TaskList;
 import typecast.ui.Ui;
 
 /**
- * Main class for the TypeCast application.
- * Manages the initialization and execution of the task management system.
+ * TypeCast is a chatbot that helps users manage their tasks.
+ * It supports three types of tasks: Todos, Deadlines, and Events.
  */
 public class TypeCast {
 
@@ -17,9 +17,8 @@ public class TypeCast {
     private Ui ui;
 
     /**
-     * Constructs a TypeCast instance with the specified file path for data storage.
-     *
-     * @param filePath The path to the file where tasks are stored.
+     * Constructs a TypeCast chatbot with the specified file path for storage.
+     * @param filePath The path to the data file
      */
     public TypeCast(String filePath) {
         ui = new Ui();
@@ -33,16 +32,37 @@ public class TypeCast {
     }
 
     /**
-     * Runs the main application loop.
-     * Displays welcome message, loads tasks, processes user commands until exit.
+     * Gets the response for a user command (for GUI).
+     * @param input The user's command
+     * @return The response message
+     */
+    public String getResponse(String input) {
+        try {
+            return Parser.parseCommandForGui(input, tasks, storage);
+        } catch (TypeCastException e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     * Gets the task list.
+     * @return The task list
+     */
+    public TaskList getTaskList() {
+        return tasks;
+    }
+
+    /**
+     * Runs the main chatbot loop (CLI mode).
      */
     public void run() {
         ui.showWelcome();
-
+        
+        // Show how many tasks were loaded
         if (tasks.size() > 0) {
             ui.showTasksLoaded(tasks.size());
         }
-
+        
         boolean isRunning = true;
         while (isRunning) {
             try {
@@ -52,15 +72,13 @@ public class TypeCast {
                 ui.showError(e.getMessage());
             }
         }
-
+        
         ui.showGoodbye();
         ui.close();
     }
 
     /**
-     * Entry point of the TypeCast application.
-     *
-     * @param args Command line arguments (not used).
+     * Main entry point for the TypeCast chatbot (CLI mode).
      */
     public static void main(String[] args) {
         new TypeCast("./data/tasks.txt").run();
