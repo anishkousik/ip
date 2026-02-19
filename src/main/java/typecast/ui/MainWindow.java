@@ -28,6 +28,9 @@ public class MainWindow extends AnchorPane {
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
     private Image typeCastImage = new Image(this.getClass().getResourceAsStream("/images/TypeCast.png"));
 
+    /**
+     * Initializes UI bindings and displays the initial welcome message.
+     */
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
@@ -39,7 +42,12 @@ public class MainWindow extends AnchorPane {
         );
     }
 
-    /** Injects the TypeCast instance */
+    /**
+     * Injects the main TypeCast instance used by this window.
+     * Also displays a loading message when existing tasks are found.
+     *
+     * @param tc TypeCast application instance.
+     */
     public void setTypeCast(TypeCast tc) {
         typeCast = tc;
         
@@ -54,7 +62,8 @@ public class MainWindow extends AnchorPane {
 
     /**
      * Creates two dialog boxes, one echoing user input and the other containing TypeCast's reply
-     * and then appends them to the dialog container. Clears the user input after processing.
+      * and then appends them to the dialog container.
+      * Clears the user input after processing and exits the application on {@code bye}.
      */
     @FXML
     private void handleUserInput() {
