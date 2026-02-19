@@ -1,5 +1,6 @@
 T | 1 | read book
 T | 1 | read book
-T | 1 | Week 4 tasks
+T | 0 | Week 4 tasks
 T | 1 | read
 T | 1 | readread
+D | 0 | return book | 2023-12-12 2359
