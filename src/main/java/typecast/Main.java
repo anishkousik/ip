@@ -30,6 +30,13 @@ public class Main extends Application {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println("Error loading FXML: " + e.getMessage());
         }
+    }
+    
+    @Override
+    public void init() throws Exception {
+        super.init();
+        // Initialize JavaFX - will throw exception if no display available
     }
 }
