@@ -1,75 +1,55 @@
 plugins {
     id 'java'
     id 'application'
-    id 'jacoco'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
-
-group 'typecast'
-version '0.1.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
+    String javaFxVersion = '17.0.7'
 
-javafx {
-    version = "17.0.7"
-    modules = [ 'javafx.controls', 'javafx.fxml' ]
-}
-
-application {
-    mainClass.set('typecast.Launcher')
-}
-
-run {
-    standardInput = System.in
-    standardOutput = System.out
+    implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'linux'
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: javaFxVersion, classifier: 'linux'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: javaFxVersion, classifier: 'linux'
+    implementation group: 'org.openjfx', name: 'javafx-graphics', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-graphics', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-graphics', version: javaFxVersion, classifier: 'linux'
 }
 
 test {
     useJUnitPlatform()
-    
+
     testLogging {
         events "passed", "skipped", "failed"
+
+        showExceptions true
+        exceptionFormat "full"
+        showCauses true
+        showStackTraces true
         showStandardStreams = false
     }
-    
-    finalizedBy jacocoTestReport
 }
 
-jacoco {
-    toolVersion = "0.8.11"
+application {
+    mainClass.set("typecast.Launcher")
 }
 
-jacocoTestReport {
-    dependsOn test
-    
-    reports {
-        xml.required = true
-        html.required = true
-    }
-    
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                'typecast/TypeCast.class',
-                'typecast/Launcher.class',
-                'typecast/ui/MainWindow.class',
-                'typecast/ui/DialogBox.class'
-            ])
-        }))
-    }
+shadowJar {
+    archiveBaseName = "typecast"
+    archiveClassifier = null
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+run{
+    standardInput = System.in
 }
-
